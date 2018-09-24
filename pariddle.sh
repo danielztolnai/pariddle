@@ -1,8 +1,7 @@
 #!/bin/bash
 
 TOKEN=""
-COOKIE=""
-export TOKEN COOKIE
+export TOKEN
 
 RIDDLE=${1}
 shift
@@ -11,20 +10,13 @@ SOLUTIONS="$@"
 function solve_riddle() {
     RIDDLE="${1}"
     SOLUTION="${2}"
-    curl "https://qpa.sch.bme.hu/riddles/${RIDDLE}/solve" \
-        -H "${COOKIE}" \
-        -H 'Origin: https://qpa.sch.bme.hu' \
-        -H 'Accept-Encoding: gzip, deflate, br' \
-        -H 'Accept-Language: en-GB,en;q=0.8,en-US;q=0.6,hu;q=0.4' \
-        -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
-        -H 'Accept: application/json, text/javascript, */*; q=0.01' \
-        -H "Referer: https://qpa.sch.bme.hu/riddles/${RIDDLE}" \
-        -H 'X-Requested-With: XMLHttpRequest' \
-        -H 'Connection: keep-alive' \
-        --data "_token=${TOKEN}&solution=${SOLUTION}" \
+    curl 'https://qpa.sch.bme.hu/api/Riddle/Guess' \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H 'Content-Type: application/json' \
+        --data-binary "{\"guess\":\"${SOLUTION}\",\"riddleId\":\"${RIDDLE}\"}" \
         --compressed \
         -s \
-        | jq '.success' -r
+        | jq '.wasCorrect' -r
 }
 export -f solve_riddle
 
@@ -40,13 +32,13 @@ if [[ "$#" -lt "1" ]]; then
     exit 0
 fi
 
-if [[ -z "${TOKEN}" ]] || [[ -z "${COOKIE}" ]]; then
-    echo "Token and/or cookie is missing. Please set variables TOKEN and COOKIE. You can copy the data from your browser."
+if [[ -z "${TOKEN}" ]]; then
+    echo "Token is missing. Please set the variable TOKEN. You can copy the data from your browser."
     exit 1
 fi
 
 printf "%-40s %s\n" "Solution" "Response"
 echo "-------------------------------------------------"
-parallel print_result ${RIDDLE} ::: ${SOLUTIONS}
+parallel --no-notice print_result ${RIDDLE} ::: ${SOLUTIONS}
 
 exit 0
