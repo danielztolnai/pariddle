@@ -1,11 +1,22 @@
 #!/bin/bash
 
 TOKEN=""
-export TOKEN
+QPA_USER=""
+QPA_PASS=""
+export QPA_USER QPA_PASS TOKEN
 
 RIDDLE=${1}
 shift
 SOLUTIONS="$@"
+
+function authenticate() {
+    curl 'https://qpa.sch.bme.hu/api/Auth/Login' \
+        -H 'Content-Type: application/json-patch+json' \
+        --data-binary "{\"email\":\"${QPA_USER}\",\"password\":\"${QPA_PASS}\"}" \
+        --compressed \
+        -s \
+        | jq '.jwt.authToken' -r 2>/dev/null
+}
 
 function solve_riddle() {
     RIDDLE="${1}"
@@ -33,8 +44,11 @@ if [[ "$#" -lt "1" ]]; then
 fi
 
 if [[ -z "${TOKEN}" ]]; then
-    echo "Token is missing. Please set the variable TOKEN. You can copy the data from your browser."
-    exit 1
+    TOKEN=$(authenticate)
+    if [[ $? -ne 0 ]]; then
+        (>&2 echo "Authentication error, check credentials (QPA_USER+QPA_PASS or TOKEN)");
+        exit 1
+    fi
 fi
 
 printf "%-40s %s\n" "Solution" "Response"
