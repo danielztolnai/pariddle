@@ -59,10 +59,13 @@ function print_result() {
 }
 export -f print_result
 
-if [[ "$#" -lt "1" ]]; then
-    echo "Usage: $0 [RIDDLE ID] [SOLUTION]..."
-    exit 0
-fi
+function open_image() {
+    IMAGE_FILE="${1}"
+    OPEN_CMD="xdg-open"
+    if hash "${OPEN_CMD}" &>/dev/null; then
+        "${OPEN_CMD}" "${IMAGE_FILE}"
+    fi
+}
 
 if [[ -z "${TOKEN}" ]]; then
     TOKEN=$(authenticate)
@@ -70,6 +73,14 @@ if [[ -z "${TOKEN}" ]]; then
         (>&2 echo "Authentication error, check credentials (QPA_USER+QPA_PASS or TOKEN)");
         exit 1
     fi
+fi
+
+if [[ "$#" -lt "1" ]]; then
+    echo "Usage: $0 [RIDDLE ID] [SOLUTION]..."
+    echo "Downloading fresh fun..."
+    RIDDLE=$(get_newest)
+    open_image "${RIDDLE}.${IMG_EXT}"
+    exit 0
 fi
 
 if [[ -z "${RIDDLE}" ]]; then
