@@ -7,10 +7,16 @@ export QPA_USER QPA_PASS TOKEN
 
 IMG_EXT="jpg"
 TOOL_DEPS="parallel jq curl"
+COLSEP="_"
 
 RIDDLE=${1}
 shift
-SOLUTIONS="$@"
+
+SOLUTIONS=""
+for i in "$@"; do
+    NEXT_SOLUTION=${i// /${COLSEP}}
+    SOLUTIONS="${SOLUTIONS}${NEXT_SOLUTION} "
+done
 
 function authenticate() {
     curl 'https://qpa.sch.bme.hu/api/Auth/Login' \
@@ -42,7 +48,8 @@ function get_newest() {
 
 function solve_riddle() {
     RIDDLE="${1}"
-    SOLUTION="${2}"
+    shift
+    SOLUTION="$@"
     curl 'https://qpa.sch.bme.hu/api/Riddle/Guess' \
         -H "Authorization: Bearer ${TOKEN}" \
         -H 'Content-Type: application/json' \
@@ -55,7 +62,8 @@ export -f solve_riddle
 
 function print_result() {
     RIDDLE="${1}"
-    SOLUTION="${2}"
+    shift
+    SOLUTION="$@"
     printf "%-40s %s\n"  "${SOLUTION}" "$(solve_riddle ${RIDDLE} ${SOLUTION})"
 }
 export -f print_result
@@ -95,6 +103,6 @@ fi
 
 printf "%-40s %s\n" "Solution" "Response"
 echo "-------------------------------------------------"
-parallel --no-notice print_result ${RIDDLE} ::: ${SOLUTIONS}
+parallel --no-notice --colsep "${COLSEP}" print_result ${RIDDLE} ::: ${SOLUTIONS}
 
 exit 0
