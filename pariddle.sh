@@ -5,6 +5,8 @@ QPA_USER=""
 QPA_PASS=""
 export QPA_USER QPA_PASS TOKEN
 
+IMG_EXT="jpg"
+
 RIDDLE=${1}
 shift
 SOLUTIONS="$@"
@@ -27,12 +29,12 @@ function get_newest() {
     RIDDLE_TITLE=$(jq '.title' -r <<< ${RIDDLE_JSON})
     RIDDLE_ID=$(jq '.id' -r <<< ${RIDDLE_JSON})
     RIDDLE_IMG=$(jq '.imageId' -r <<< ${RIDDLE_JSON})
-    (>&2 echo -e "Riddle: ${RIDDLE_ID} - ${RIDDLE_TITLE}\n")
-    if [ ! -f "${RIDDLE_ID}.jpg" ]; then
+    (>&2 echo -e "Riddle: ${RIDDLE_ID} - ${RIDDLE_TITLE}")
+    if [ ! -f "${RIDDLE_ID}.${IMG_EXT}" ]; then
         curl "https://qpa.sch.bme.hu/api/Image/${RIDDLE_IMG}" \
             -H "Authorization: Bearer ${TOKEN}" \
             --compressed \
-            -s > "${RIDDLE_ID}.jpg"
+            -s > "${RIDDLE_ID}.${IMG_EXT}"
     fi
     echo "${RIDDLE_ID}"
 }
