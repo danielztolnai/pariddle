@@ -18,6 +18,25 @@ function authenticate() {
         | jq '.jwt.authToken' -r 2>/dev/null
 }
 
+function get_newest() {
+    RIDDLE_JSON=$(curl 'https://qpa.sch.bme.hu/api/Riddle/GetVisible' \
+        -H "Authorization: Bearer ${TOKEN}" \
+        --compressed \
+        -s \
+        | jq '.[] | max_by(.id)' 2>/dev/null)
+    RIDDLE_TITLE=$(jq '.title' -r <<< ${RIDDLE_JSON})
+    RIDDLE_ID=$(jq '.id' -r <<< ${RIDDLE_JSON})
+    RIDDLE_IMG=$(jq '.imageId' -r <<< ${RIDDLE_JSON})
+    (>&2 echo -e "Riddle: ${RIDDLE_ID} - ${RIDDLE_TITLE}\n")
+    if [ ! -f "${RIDDLE_ID}.jpg" ]; then
+        curl "https://qpa.sch.bme.hu/api/Image/${RIDDLE_IMG}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            --compressed \
+            -s > "${RIDDLE_ID}.jpg"
+    fi
+    echo "${RIDDLE_ID}"
+}
+
 function solve_riddle() {
     RIDDLE="${1}"
     SOLUTION="${2}"
@@ -49,6 +68,10 @@ if [[ -z "${TOKEN}" ]]; then
         (>&2 echo "Authentication error, check credentials (QPA_USER+QPA_PASS or TOKEN)");
         exit 1
     fi
+fi
+
+if [[ -z "${RIDDLE}" ]]; then
+    RIDDLE=$(get_newest)
 fi
 
 printf "%-40s %s\n" "Solution" "Response"
