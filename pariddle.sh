@@ -6,6 +6,7 @@ QPA_PASS=""
 export QPA_USER QPA_PASS TOKEN
 
 IMG_EXT="jpg"
+TOOL_DEPS="parallel jq curl"
 
 RIDDLE=${1}
 shift
@@ -66,6 +67,11 @@ function open_image() {
         "${OPEN_CMD}" "${IMAGE_FILE}"
     fi
 }
+
+if ! hash ${TOOL_DEPS} &>/dev/null; then
+    echo "Missing dependency. Please make sure the following tools are available on your system: ${TOOL_DEPS}"
+    exit 1
+fi
 
 if [[ -z "${TOKEN}" ]]; then
     TOKEN=$(authenticate)
