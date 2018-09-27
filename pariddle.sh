@@ -103,6 +103,6 @@ fi
 
 printf "%-40s %s\n" "Solution" "Response"
 echo "-------------------------------------------------"
-parallel --no-notice --colsep "${COLSEP}" print_result ${RIDDLE} ::: ${SOLUTIONS}
+parallel --colsep "${COLSEP}" print_result ${RIDDLE} ::: ${SOLUTIONS} 2>/dev/null
 
 exit 0
