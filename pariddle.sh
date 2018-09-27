@@ -32,7 +32,7 @@ function get_newest() {
         -H "Authorization: Bearer ${TOKEN}" \
         --compressed \
         -s \
-        | jq '.[] | max_by(.id)' 2>/dev/null)
+        | jq '.[] | select(length > 0) | max_by(.id)' 2>/dev/null)
     RIDDLE_TITLE=$(jq '.title' -r <<< ${RIDDLE_JSON})
     RIDDLE_ID=$(jq '.id' -r <<< ${RIDDLE_JSON})
     RIDDLE_IMG=$(jq '.imageId' -r <<< ${RIDDLE_JSON})
