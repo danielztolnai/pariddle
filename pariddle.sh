@@ -5,7 +5,7 @@ QPA_USER=""
 QPA_PASS=""
 export QPA_USER QPA_PASS TOKEN
 
-IMG_EXT="jpg"
+IMG_EXT="pic"
 TOOL_DEPS="parallel jq curl"
 COLSEP="_"
 
